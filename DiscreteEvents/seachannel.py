@@ -15,7 +15,6 @@ class Ship:
 
     def __lt__(self, other):
         assert hasattr(other, "arrival")
-        assert other.arrival > -1 and self.arrival > -1
         return self.arrival < other.arrival
 
     def arrive(self, time=0):
@@ -188,14 +187,90 @@ class Hatch:
         return t
 
     # definir la fase de transporte
+    def down_transport(self):
+        t = 0
+
+        # cerrar la puerta superior
+        if self.up_door == Hatch.OPEN:
+            t += exponential(self.l_door)
+            self.up_door = Hatch.CLOSED
+
+        # abrir la compuerta inferior
+        if self.inf_door == Hatch.CLOSED:
+            t += exponential(self.l_door)
+            self.inf_door = Hatch.OPEN
+
+        # vaciar el dique
+        t += exponential(self.l_transport)
+        return t
+
+    def down_departure(self):
+        # sacar los barcos del dique
+        ships = self._remove_ships()
+        t = sum(exponential(self.l_departure, len(ships)))
+        for s in ships:
+            s.departure = t
+
+        # cerrar la compuerta inferior
+        if self.inf_door == Hatch.OPEN:
+            t += exponential(self.l_door)
+            self.inf_door = Hatch.CLOSED
+
+        return t, ships
 
 
 class HatchSystem:
     def __init__(self, hatches):
         # Construir la cadena de diques
+        self.__hatch_num = len(hatches)
         initial = Hatch(initial_State=hatches[-1])
         for i in range(len(hatches) - 1, -1, -1):
             initial = Hatch(next_hatch=initial, initial_State=hatches[i])
+
+        self.__start = initial
+
+    def __getitem__(self, index):
+        assert isinstance(index, int)
+        if not 0 <= index < self.__len__():
+            raise IndexError
+
+        for i, h in enumerate(self.__start):
+            if i == index:
+                return h
+
+    def __len__(self):
+        return self.__hatch_num
+
+    def do_fase(self, ships_queue, i):
+        # si este es un dique de subida, realizar fase de subida
+        t = 0
+
+        current = self.__getitem__(i)
+        # =============================================================
+        # Cada ciclo consta de las mismas fases.
+        # La diferencia radica en las compuertas que se abren
+        # y si se llena o si se vacia el dique en dependencia
+        # del tipo de dique que sea (de subida o de bajada).
+        # Por ahora los tiempos de llenado y vaciado, asi como
+        # los tiempos de apertura y cierre de cada puerta son los mismos
+        # pero esto se pudiera relajar en una implementacion futura.
+        # ==============================================================
+
+        # Ciclo de subida
+        if current.state == Hatch.UP:
+            t += current.up_entry(ships_queue)
+            t += current.up_transport()
+            t1, ships = current.up_departure()
+            t += t1
+
+        # Ciclo de bajada
+        elif current.state == Hatch.DOWN:
+            t += current.down_entry(ships_queue)
+            t += current.down_transport()
+            t1, ships = current.down_departure()
+            t += t1
+
+        return t, ships
 
 
 class SeaChannel:
@@ -205,6 +280,24 @@ class SeaChannel:
         # El canal funciona en 3 horarios, y en cada horario, hay diferencia
         # en los parametros de la distribucion con la que llegan barcos.
         self.ships_queue = []
+
+        # Si se se define una funcion para generar barcos de 8pm a 8am
+        # entonces generamos los barcos correspondientes.
+        # esta funcion debe devolver la cantidad de barcos que arriban
+        # en este tiempo. (TODO Quizas una POISSON NO HOMOGENEA ??). Una
+        # lista con los tiempos de arribo de estos barcos.
+        if func is not None:
+            new_ships = func()
+            for s in new_ships:
+                r = random()
+                if 0 <= r <= 1 / 3:
+                    ship = SmallShip(5 / 2)
+                elif 1 / 3 < r <= 2 / 3:
+                    ship = MediumShip(15, 3)
+                else:
+                    ship = LargeShip(45, 3)
+                ship.arrival = -s
+                self.ships_queue.append(ship)
 
         # Simular la llegada entre las 8am y las 11am
         # (el tiempo entre arribos se da en minutos).
@@ -256,4 +349,24 @@ class SeaChannel:
             self.ships_queue.append(ship)
 
         # ordenar la cola por tiempos de arribo.
+
         self.ships_queue.sort()
+
+    def run_day(self):
+        # Recordar que 12h = 720 minutos
+        ready_queue = []
+        waiting = [0] * len(self.ships_queue)
+        pending = [False] * len(self.hatches)
+        t = 0
+        while (ready_queue or self.ships_queue) and t <= 720:
+            for i in range(len(self.hatches)):
+                if pending[i]:
+                    t1 = 0
+                    ships = None
+                    t1, ships = self.hatches.do_fase(ready_queue[i], i)
+                    t += t1
+                    if not self.hatches[i].last():
+                        pending[i+1] = True
+                    else:
+                        for s in ships:
+                            s.departure = t
