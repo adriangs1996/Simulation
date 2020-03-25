@@ -12,6 +12,7 @@ class Ship:
         self.var = variance
         self.size = 0
         self.arrival = -1
+        self.time_used = 0
 
     def __lt__(self, other):
         assert hasattr(other, "arrival")
@@ -100,16 +101,21 @@ class Hatch:
             hatch = hatch.next_hatch
         yield hatch
 
-    def _put_ships(self, ships):
-        for ship in ships:
+    def _put_ships(self, ships: list):
+        taken = []
+        for i, ship in enumerate(ships):
             if ship.size <= self.allotment[0]:
                 self.allotment[0] -= ship.size
                 ship.queue = 0
                 self.ships.append(ship)
+                taken.append(i)
             elif ship.size <= self.allotment[1]:
                 self.allotment[1] -= ship.size
                 ship.queue = 1
                 self.ships.append(ship)
+                taken.append(i)
+        for i in taken:
+            del ships[i]
 
     def _remove_ships(self):
         self.allotment = [3 * MEDIUMSIZE, 3 * MEDIUMSIZE]
@@ -133,7 +139,13 @@ class Hatch:
         self._put_ships(ships)
         # for s in self.ships:
         #   t += exponential(1 / self.l_ship)
-        t += sum(exponential(self.l_ship, len(self.ships)))
+
+        ta = exponential(self.l_ship, len(self.ships))
+        t += sum(ta)
+
+        # tiempo que gasto el barco en la primera fase
+        for i, s in enumerate(self.ships):
+            s.time_used += ta[i]
 
         return t
 
@@ -152,15 +164,19 @@ class Hatch:
 
         # llenar el dique
         t += exponential(self.l_transport)
+
+        for s in self.ships:
+            s.time_used += t
         return t
 
     # definir la fase de salida
     def up_departure(self):
         # sacar los barcos del dique
         ships = self._remove_ships()
-        t = sum(exponential(self.l_departure, len(ships)))
-        for s in ships:
-            s.departure = t
+        ta = exponential(self.l_departure, len(ships))
+        t = sum(ta)
+        for i, s in enumerate(ships):
+            s.time_used += ta[i]
 
         # cerrar la puerta superior
         if self.up_door == Hatch.OPEN:
@@ -182,8 +198,11 @@ class Hatch:
 
         # dejar entrar los barcos
         self._put_ships(ships)
-        t += sum(exponential(self.l_ship, len(self.ships)))
+        ta = exponential(self.l_ship, len(self.ships))
+        t += sum(ta)
 
+        for i, s in enumerate(self.ships):
+            s.time_used += ta[i]
         return t
 
     # definir la fase de transporte
@@ -202,14 +221,18 @@ class Hatch:
 
         # vaciar el dique
         t += exponential(self.l_transport)
+
+        for s in self.ships:
+            s.time_used += t
         return t
 
     def down_departure(self):
         # sacar los barcos del dique
         ships = self._remove_ships()
-        t = sum(exponential(self.l_departure, len(ships)))
-        for s in ships:
-            s.departure = t
+        ta = exponential(self.l_departure, len(ships))
+        t = sum(ta)
+        for i, s in enumerate(ships):
+            s.time_used += ta[i]
 
         # cerrar la compuerta inferior
         if self.inf_door == Hatch.OPEN:
@@ -228,6 +251,9 @@ class HatchSystem:
             initial = Hatch(next_hatch=initial, initial_State=hatches[i])
 
         self.__start = initial
+
+    def __iter__(self):
+        return self.__start.__iter__()
 
     def __getitem__(self, index):
         assert isinstance(index, int)
@@ -313,7 +339,7 @@ class SeaChannel:
                 ship = MediumShip(15, 3)
             elif 2 / 3 < ship_rand <= 1:
                 ship = LargeShip(45, 3)
-            nt = ship.arrive()
+            nt = ship.arrive(time)
             time = max(nt, time)
             self.ships_queue.append(ship)
 
@@ -329,7 +355,7 @@ class SeaChannel:
                 ship = MediumShip(15, 3)
             elif 2 / 3 < ship_rand <= 1:
                 ship = LargeShip(45, 3)
-            nt = ship.arrive(180)
+            nt = ship.arrive(time)
             time = max(nt, time)
             self.ships_queue.append(ship)
 
@@ -344,29 +370,64 @@ class SeaChannel:
                 ship = MediumShip(15, 3)
             elif 2 / 3 < ship_rand <= 1:
                 ship = LargeShip(45, 3)
-            nt = ship.arrive(540)
+            nt = ship.arrive(time)
             time = max(nt, time)
             self.ships_queue.append(ship)
 
         # ordenar la cola por tiempos de arribo.
-
         self.ships_queue.sort()
 
     def run_day(self):
         # Recordar que 12h = 720 minutos
+        queue = [x for x in self.ships_queue]
         ready_queue = []
-        waiting = [0] * len(self.ships_queue)
-        pending = [False] * len(self.hatches)
+        wait_time = []
+
+        # establecer si un dique esta lleno o no
+        for hatch in self.hatches:
+            hatch.time_busy = 0
+
+        pending = [[] for _ in self.hatches]
         t = 0
-        while (ready_queue or self.ships_queue) and t <= 720:
-            for i in range(len(self.hatches)):
-                if pending[i]:
-                    t1 = 0
-                    ships = None
-                    t1, ships = self.hatches.do_fase(ready_queue[i], i)
-                    t += t1
-                    if not self.hatches[i].last():
-                        pending[i+1] = True
-                    else:
-                        for s in ships:
-                            s.departure = t
+        while t <= 720:
+            # Agregar a la cola los barcos que hallan arribado
+            # y ponerlos pendientes para el dique 0
+            if queue:
+                while queue[0].arrival <= t:
+                    s = queue.pop(0)
+                    ready_queue.append(s)
+                    pending[0].append(s)
+
+            # Si hay barcos en la cola realizar una iteracion
+            if ready_queue:
+                hatchs_times = []
+                for i in range(len(self.hatches)):
+                    # Si el dique i tiene barcos pendientes y no esta
+                    # ocupado, entonces atenderlos
+                    if pending[i] and self.hatches[i].time_busy <= t:
+                        t1, ships = self.hatches[i].do_fase(pending[i], i)
+                        self.hatches[i].time_busy = t + t1
+                        hatchs_times.append(t1)
+
+                        # Si el dique i no era el ultimo entonces
+                        # enviar el grupo de barcos al proximo dique
+                        if not self.hatches[i].last():
+                            pending[i + 1] = ships
+
+                        # Si el dique i es el ultimo, entonces calcular
+                        # el tiempo de espera para cada bote
+                        else:
+                            for s in ships:
+                                # Cada barco guarda el tiempo que uso
+                                # si le restamos ese tiempo al tiempo
+                                # actual, obtenemos el tiempo de espera
+                                # en cola.
+                                # Notar que en este caso, t1 es el tiempo que
+                                # demora el ultimo dique en terminar
+                                wait_time.append(t + t1 - s.time_used)
+
+                # Actualizamos t si algun dique completo su fase
+                # de lo contrario solo pasamos un minuto
+                t += min(hatchs_times) if hatchs_times else 1
+            else:
+                t += 1
