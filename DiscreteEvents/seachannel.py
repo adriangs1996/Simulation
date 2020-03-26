@@ -145,7 +145,7 @@ class Hatch:
         # for s in self.ships:
         #   t += exponential(1 / self.l_ship)
 
-        ta = exponential(self.l_ship, len(self.ships))
+        ta = exponential(self.l_ship, len(self.ships)) if self.ships else [0]
         t += sum(ta)
 
         # tiempo que gasto el barco en la primera fase
@@ -178,7 +178,7 @@ class Hatch:
     def up_departure(self):
         # sacar los barcos del dique
         ships = self._remove_ships()
-        ta = exponential(self.l_departure, len(ships))
+        ta = exponential(self.l_departure, len(ships)) if ships else [0]
         t = sum(ta)
         for i, s in enumerate(ships):
             s.time_used += ta[i]
@@ -203,7 +203,7 @@ class Hatch:
 
         # dejar entrar los barcos
         self._put_ships(ships)
-        ta = exponential(self.l_ship, len(self.ships))
+        ta = exponential(self.l_ship, len(self.ships)) if self.ships else [0]
         t += sum(ta)
 
         for i, s in enumerate(self.ships):
@@ -234,7 +234,7 @@ class Hatch:
     def down_departure(self):
         # sacar los barcos del dique
         ships = self._remove_ships()
-        ta = exponential(self.l_departure, len(ships))
+        ta = exponential(self.l_departure, len(ships)) if ships else [0]
         t = sum(ta)
         for i, s in enumerate(ships):
             s.time_used += ta[i]
@@ -294,11 +294,22 @@ class HatchSystem:
             t1, ships = current.up_departure()
             t += t1
 
+            # Una vez que el dique completo la subida, tiene que bajar
+            t += current.down_entry([])
+            t += current.down_transport()
+            t1, _ = current.down_departure()
+            t += t1
+
         # Ciclo de bajada
         elif current.state == Hatch.DOWN:
             t += current.down_entry(ships_queue)
             t += current.down_transport()
             t1, ships = current.down_departure()
+            t += t1
+            # Una vez que el dique baja, tiene que volver a subir
+            t += current.up_entry([])
+            t += current.up_transport()
+            t1, _ = current.up_departure()
             t += t1
 
         return t, ships
