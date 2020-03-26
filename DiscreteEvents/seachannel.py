@@ -81,16 +81,6 @@ class Hatch:
         # barcos en el dique actual
         self.ships = []
 
-    def change_state(self):
-        if self.state == Hatch.UP:
-            self.state = Hatch.DOWN
-            self.up_door = Hatch.CLOSED
-            self.inf_door = Hatch.OPEN
-        elif self.state == Hatch.DOWN:
-            self.state = Hatch.UP
-            self.up_door = Hatch.OPEN
-            self.inf_door = Hatch.CLOSED
-
     def last(self):
         return self.next_hatch is None
 
@@ -431,3 +421,5 @@ class SeaChannel:
                 t += min(hatchs_times) if hatchs_times else 1
             else:
                 t += 1
+        expected = sum(wait_time) / len(wait_time)
+        return expected
