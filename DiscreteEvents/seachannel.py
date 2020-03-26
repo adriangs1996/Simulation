@@ -1,5 +1,7 @@
-from numpy.random import random, exponential, normal
+#from numpy.random import random, exponential, normal
+from numpy.random import random
 from math import sqrt
+from rtools import normal, exponential
 import logging
 
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
@@ -82,16 +84,16 @@ class Hatch:
         self.allotment = [MEDIUMSIZE * 3, MEDIUMSIZE * 3]
 
         # lambda del tiempo de apertura de las compuertas
-        self.l_door = 1 / 4
+        self.l_door = 4
 
         # lambda del tiempo que demora un barco en entrar
-        self.l_ship = 1 / 2
+        self.l_ship = 2
 
         # lambda del tiempo de la fase de transporte
-        self.l_transport = 1 / 7
+        self.l_transport = 7
 
         # lambda del tiempo de salida de cada barco
-        self.l_departure = 1 / 1.5
+        self.l_departure = 1.5
 
         # barcos en el dique actual
         self.ships = []

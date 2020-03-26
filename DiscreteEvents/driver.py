@@ -27,7 +27,7 @@ parser.add_argument(
 parser.add_argument('-c',
                     "--count",
                     type=int,
-                    help="Run the simulator <count> times.")
+                    help="Run the simulator COUNT times.")
 
 args = parser.parse_args()
 
@@ -51,11 +51,11 @@ if count > 1:
     for i in range(1, count + 1):
         print("Simulation %d" % (i - 1))
         print("--------------")
-        print("Result: %0.5f minutes\n" % r[i - 1])
+        print("Result: %0.2f minutes\n" % r[i - 1])
     if args.mean:
-        print("Mean: %0.5f" % mean(r))
+        print("Mean: %0.2f" % mean(r))
 
 else:
-    print("Result: %0.5f" % r[0])
+    print("Result: %0.2f" % r[0])
     if args.mean:
-        print("Result: %0.5f" % r[0])
+        print("Result: %0.2f" % r[0])
