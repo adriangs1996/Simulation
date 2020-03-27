@@ -69,15 +69,21 @@ Entonces, se definen las siguientes variables para lograr este funcionamiento de
   
   4. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585336936/render.png): Tiempo que ha usado el barco i en su trayecto por los diques.
   
+  5. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337198/render.png): Tiempo de arribo del barco i.
   
 * **Variables de estado del sistema**
-
-  1. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337198/render.png): Tiempo de arribo del barco i.
   
-  2. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337290/render.png): Cantidad de barcos en la cola de espera del dique i.
+  1. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337290/render.png): Cantidad de barcos en la cola de espera del dique i.
   
-  3. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337370/render.png): Cantidad de barcos en el sistema (que no han pasado a la cola de ningun dique) en el tiempo t.
+  2. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337370/render.png): Cantidad de barcos en el sistema (que no han pasado a la cola de ningun dique) en el tiempo t.
   
-* **Variable de conteo
+* **Variable de conteo**
 
   1. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337791/render.png): Cantidad de barcos que han abandonado el sistema (que ya han transitado por todos los diques).
+  
+Al definir estas variables, queda claro que los eventos de nuestra simulación son: las llegadas de los barcos al sistema y el tiempo de finalización de cada dique, o sea, la lista de eventos es:
+
+
+![equation](http://www.sciweavers.org/upload/Tex2Img_1585338895/render.png)
+
+donde ![equation](http://www.sciweavers.org/upload/Tex2Img_1585338809/render.png) es el tiempo de arribo del barco i y ![equation](http://www.sciweavers.org/upload/Tex2Img_1585338948/render.png) es el tiempo de finalización del dique j luego del tiempo t.
