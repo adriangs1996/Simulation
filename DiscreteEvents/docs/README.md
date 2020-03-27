@@ -77,6 +77,8 @@ Entonces, se definen las siguientes variables para lograr este funcionamiento de
   
   2. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337370/render.png): Cantidad de barcos en el sistema (que no han pasado a la cola de ningun dique) en el tiempo t.
   
+  3. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585346045/render.png): Cantidad de barcos que toma el dique i de su cola de espera
+  
 * **Variable de conteo**
 
   1. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337791/render.png): Cantidad de barcos que han abandonado el sistema (que ya han transitado por todos los diques).
@@ -96,7 +98,7 @@ Entonces, para comenzar la simulación, inicializamos las variables:
 
 ![equation](http://www.sciweavers.org/upload/Tex2Img_1585341002/render.png)
 
-***Mientras ![equation](http://www.sciweavers.org/upload/Tex2Img_1585341216/render.png):***
+***MIENTRAS ![equation](http://www.sciweavers.org/upload/Tex2Img_1585341216/render.png):***
     
    ![equation](http://www.sciweavers.org/upload/Tex2Img_1585345621/render.png)
    
@@ -120,9 +122,15 @@ Entonces, para comenzar la simulación, inicializamos las variables:
    
    ![equation](http://www.sciweavers.org/upload/Tex2Img_1585345139/render.png)
    
+   Actualizamos ![equation](http://www.sciweavers.org/upload/Tex2Img_1585346482/render.png) para cada dique i que se procese.
+   
+   Actualizamos ![equation](http://www.sciweavers.org/upload/Tex2Img_1585346275/render.png) para cada dique i que se procese y que no sea el ultimo dique.
+   
    actualizamos el tiempo t, notar que solo pasa un tiempo igual al menor tiempo que le toma a un dique procesar sus barcos si todos los diques procesan, de lo contrario tiempo aumenta en 1:
    
    ![equation](http://www.sciweavers.org/upload/Tex2Img_1585343394/render.png)
+ 
+ **REPETIR**
    
 **Al finalizar:**
   Devolver ![equation](http://www.sciweavers.org/upload/Tex2Img_1585345342/render.png)
