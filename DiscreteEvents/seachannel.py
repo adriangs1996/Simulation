@@ -482,7 +482,8 @@ class SeaChannel:
                             wait_time.append(t + ti - s.time_used - s.arrival)
                 # Actualizar el tiempo en dependencia de si
                 # algun dique finalizo
-                t += min(hatch_times) if hatch_times else 1
+                t += min(hatch_times) if len(hatch_times) == len(
+                    self.hatches) else 1
             else:
                 t += 1
 
