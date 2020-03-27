@@ -1,4 +1,4 @@
-***Proyecto de Eventos Discretos.***
+# Proyecto de Eventos Discretos.
 
 *Autor: Adrian Gonzalez Sanchez*
 *Grupo: C-412*
@@ -19,7 +19,8 @@ El tiempo de arribo de los barcos distribuye de acuerdo con la función Normal y
 Pequeño       ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279398/render.png) | ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279281/render.png) | ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279309/render.png)
 
 Mediano      ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279454/render.png) | ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279498/render.png) | ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279537/render.png)
-Grande        $\mu = 45, \sigma^2 = 3$ | $\mu = 35, \sigma^2 = 7$| $\mu = 60, \sigma^2 = 9$
+
+Grande        ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279619/render.png) | ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279645/render.png) | ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279677/render.png)
 
 
 ## Ideas e interpretación
