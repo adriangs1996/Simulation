@@ -16,7 +16,7 @@ El tiempo de arribo de los barcos distribuye de acuerdo con la función Normal y
 
 **Tamaño**  |  **8:00am - 11:00am**    | **11:00am - 5:00pm**    |  **5:00pm - 8:00pm**
 
-Pequeño       $\mu = 10, \sigma^2 = 2$ | $\mu = 3, \sigma^2 = 1$ | $\mu = 10, \sigma^2 = 2$
+Pequeño       ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279213/render.png) | ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279281/render.png) | ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279309/render.png)
 
 Mediano       $\mu = 15, \sigma^2 = 5$ | $\mu = 10, \sigma^2 = 5$| $\mu = 20, \sigma^2 = 5$
 
