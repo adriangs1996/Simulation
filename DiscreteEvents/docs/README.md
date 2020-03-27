@@ -86,4 +86,44 @@ Al definir estas variables, queda claro que los eventos de nuestra simulación s
 
 ![equation](http://www.sciweavers.org/upload/Tex2Img_1585338895/render.png)
 
-donde ![equation](http://www.sciweavers.org/upload/Tex2Img_1585338809/render.png) es el tiempo de arribo del barco i y ![equation](http://www.sciweavers.org/upload/Tex2Img_1585338948/render.png) es el tiempo de finalización del dique j luego del tiempo t.
+donde ![equation](http://www.sciweavers.org/upload/Tex2Img_1585338809/render.png) es el tiempo de arribo del barco i y ![equation](http://www.sciweavers.org/upload/Tex2Img_1585338948/render.png) es el tiempo en que el dique j termina de procesar a los barcos que posee actualmente. Si el dique j no procesa barcos actualmente, entonces ![equation](http://www.sciweavers.org/upload/Tex2Img_1585340274/render.png).
+
+Las variables que nos interesa capturar en la salida son los ![equation](http://www.sciweavers.org/upload/Tex2Img_1585340377/render.png) para cada barco i, ya que a partir de estas, podemos calcular el tiempo de espera en cola de un barco a través de la siguiente ecuación:
+
+![equation](http://www.sciweavers.org/upload/Tex2Img_1585340528/render.png)
+
+Entonces, para comenzar la simulación, inicializamos las variables:
+
+![equation](http://www.sciweavers.org/upload/Tex2Img_1585341002/render.png)
+
+***Mientras ![equation](http://www.sciweavers.org/upload/Tex2Img_1585341216/render.png):***
+    
+   ![equation](http://www.sciweavers.org/upload/Tex2Img_1585345621/render.png)
+   
+   Si ![equation](http://www.sciweavers.org/upload/Tex2Img_1585345693/render.png)
+   
+   Determinar los diques que pueden funcionar en el tiempo actual:
+   
+   ![equation](http://www.sciweavers.org/upload/Tex2Img_1585341871/render.png)
+   
+   Analizando el modelo, se puede apreciar que un dique solamente puede atender barcos pendientes en su cola, pero para que estos barcos lleguen a la cola, es necesario que el dique i-1 haya terminado en el tiempo t de procesar sus barcos, por tanto, una vez que el dique i va a procesar barcos, podemos actualizar su tiempo de ocupación de la siguiente manera:
+   
+   ![equation](http://www.sciweavers.org/upload/Tex2Img_1585342619/render.png)
+   
+   ![equation](http://www.sciweavers.org/upload/Tex2Img_1585342508/render.png)
+   
+   si el dique i es el es el ultimo en la cadena, entonces se calcula el tiempo de espera para cada barco j que proceso este dique:
+   
+   ![equation](http://www.sciweavers.org/upload/Tex2Img_1585343032/render.png)
+   
+   y se actualiza la cantidad de barcos que abandonan el sistema:
+   
+   ![equation](http://www.sciweavers.org/upload/Tex2Img_1585345139/render.png)
+   
+   actualizamos el tiempo t, notar que solo pasa un tiempo igual al menor tiempo que le toma a un dique procesar sus barcos si todos los diques procesan, de lo contrario tiempo aumenta en 1:
+   
+   ![equation](http://www.sciweavers.org/upload/Tex2Img_1585343394/render.png)
+   
+**Al finalizar:**
+  Devolver ![equation](http://www.sciweavers.org/upload/Tex2Img_1585345342/render.png)
+  
