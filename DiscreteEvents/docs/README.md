@@ -1,6 +1,7 @@
 # Proyecto de Eventos Discretos.
 
 *Autor: Adrian Gonzalez Sanchez*
+
 *Grupo: C-412*
 
 **Orden del Problema**:
@@ -25,3 +26,19 @@ Grande        ![equation](http://www.sciweavers.org/upload/Tex2Img_1585279619/re
 
 ## Ideas e interpretación
 
+Para atacar este problema, primero hubo que llegar a un grupo de restricciones o reglas sobre el problema, que ayuden a modelar mejor la situación que se nos plantea. Se define entonces las siguientes invariantes:
+
+***
+* Un canal consiste en una combinación de diques.
+
+* Cada dique tiene un modo (subida o bajada).
+
+* Cada dique ejecuta una fase cuando tiene barcos disponibles y el dique no tiene ocupación, funcionando como un elevador (puede ser ascenso o descenso).
+
+* Cada fase que ejecuta un dique hace que el dique ascienda o descienda (depende de su modo) y luego regresa a su posición.
+
+* No necesariamente la fase de subida dura lo mismo que la de bajada (las distribuciones no necesariamente son iguales).
+
+* En cada fase, se tiene en cuenta el tiempo que demora abrir o cerrar las compuertas.
+
+* El canal funciona de 8:00 AM a 8:00 PM, o sea 12 horas o 720 minutos.
