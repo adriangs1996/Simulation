@@ -42,3 +42,10 @@ Para atacar este problema, primero hubo que llegar a un grupo de restricciones o
 * En cada fase, se tiene en cuenta el tiempo que demora abrir o cerrar las compuertas.
 
 * El canal funciona de 8:00 AM a 8:00 PM, o sea 12 horas o 720 minutos.
+
+* Se asume que los barcos pueden llegar antes de la hora programada de funcionamiento del canal. Esta restricción permite acercarse un poco al funcionamiento real de los canales, ya que pueden existir eventos que hagan que un barco tenga que cambiar su ruta, o por calendario, la hora de llegada al canal no coincide con las 12 h de funcionamiento del mismo exactamente (ejemplo un crucero, que puede que llegue a las 7am al canal de Panamá y tenga que esperar 1h para poder cruzar). Generalmente estos casos son barcos grandes, por tanto se debe tener en cuenta a la hora de proveer de una función para calcular los arribos antes de tiempo. Estos eventos deben ser suficientes como para tenerlos en cuenta en el tiempo calculado, pero no tantos como para afectar sustancialmente este resultado.
+
+Con estas reglas podemos definir un modelo de N-servidores en serie, donde cada dique es un servidor que atiende a los clientes que permanecen en su cola de epera (barcos) a medida que se desocupa (termina de procesar otros barcos o actualmente no procesa a nadie). Con esto en mente, nuestro objetivo es detectar el tiempo esperado de permanencia en cola de cada barco.
+
+## Modelo
+
