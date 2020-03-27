@@ -1,1 +1,27 @@
-**Proyecto de Eventos Discretos.**
+***Proyecto de Eventos Discretos.***
+
+*Autor: Adrian Gonzalez Sanchez*
+*Grupo: C-412*
+
+**Orden del Problema**:
+Un canal marı́timo consiste en una o más exclusas colocadas en diques consecutivos de manera que la combinación de estas
+permite el ascenso o descenso de los barcos, permitiendo el acceso del barco al dique siguiente. Estos canales son usados para la navegación a través de aguas turbulentas o para atravesar terrenos terrestres. Se desea conocer el tiempo de espera de los barcos para el uso de un canal con 5 diques para su funcionamiento. La operación de un canal puede ser dividido en dos ciclos muy similares que llamaremos ciclo de subida y ciclo de bajada. El ciclo de subida comienza con la compuerta del nivel superior cerrada y la compuerta del nivel inferior abierta. Los barcos esperando en el nivel inferior entran en el dique. Cuando los barcos se acomodan dentro del dique las puertas del nivel inferior se cierran y las puertas del nivel superior se abren y el agua del nivel superior inunda el dique, haciendo la función de un elevador marı́timo. Luego los barcos pasan al nivel superior, dejando el dique vacı́o. El ciclo de bajada consiste en el funcionamiento opuesto del ciclo descrito.
+
+Ambos ciclos tienen las mismas 3 fases para su cumplimento, que se pueden llamar como fase de entrada, fase de transporte y fase de salida respectivamente. La fase de entrada consiste en abrir las puertas del nivel inferior y dejar entrar a
+los barcos esperando hasta que estos se acomodan dentro del dique, la duración de este proceso depende del tiempo de apertura de las compuertas que distribuye de manera exponencial con λ = 4 minutos y el tiempo que se demora cada barco en entrar al dique, que distribuye de manera exponencial con λ = 2 minutos independientemente del tamaño de cada barco. Los barcos a entrar en el dique son tomados de manera secuencial de la cola de arribo de los barcos y en caso de que algún barco no quepa en el dique, el siguiente en la cola toma su lugar, en caso de que ningún barco quepa en el dique, la fase comienza sin llenar la capacidad del dique. 
+
+La fase de transporte incluye cerrar la compuerta del nivel inferior, la apertura del nivel superior y el llenado del dique, esta fase tiene un tiempo de duración que distribuye de manera exponencial con λ = 7 minutos. La fase de salida se compone por la salida de los barcos del dique ası́ como el cerrar la puerta del nivel superior, esta fase tarda un tiempo que distribuye de manera exponencial con λ = 1,5 minutos por cada barco en el dique. El número total de barcos que pueden ser acomodados en un dique depende del tamaño fı́sico de los barcos. Estos tienen 3 tamaños distintos: pequeño, mediano y grande y el tamaño de cada uno de estos corresponde a la mitad del anterior. Cada dique puede albergar 2 filas con espacio para el equivalente a 3 barcos medianos (1 grande y dos pequeños). 
+
+El tiempo de arribo de los barcos distribuye de acuerdo con la función Normal y dependen del tamaño del barco ası́ como de la hora del dı́a (el canal funciona de 8 am a 8 pm), los parámetros de la función se resumen en la tabla siguiente.
+
+**Tamaño**  |  **8:00am - 11:00am**    | **11:00am - 5:00pm**    |  **5:00pm - 8:00pm**
+
+Pequeño       $\mu = 10, \sigma^2 = 2$ | $\mu = 3, \sigma^2 = 1$ | $\mu = 10, \sigma^2 = 2$
+
+Mediano       $\mu = 15, \sigma^2 = 5$ | $\mu = 10, \sigma^2 = 5$| $\mu = 20, \sigma^2 = 5$
+
+Grande        $\mu = 45, \sigma^2 = 3$ | $\mu = 35, \sigma^2 = 7$| $\mu = 60, \sigma^2 = 9$
+
+
+## Ideas e interpretación
+
