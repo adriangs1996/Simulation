@@ -59,10 +59,25 @@ Además, se puede notar que el dique 1 está procesando 2 barcos mientras que el
 
 Entonces, se definen las siguientes variables para lograr este funcionamiento del canal:
 
-* Variables de tiempo:
+* **Variables de tiempo**:
 
   1. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585336689/render.png): Tiempo total.
   
   2. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585336596/render.png): El tiempo en el cual se desocupa el dique i.
   
   3. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585336727/render.png): Tiempo que demora el dique i en procesar los barcos que toma de la cola.
+  
+  4. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585336936/render.png): Tiempo que ha usado el barco i en su trayecto por los diques.
+  
+  
+* **Variables de estado del sistema**
+
+  1. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337198/render.png): Tiempo de arribo del barco i.
+  
+  2. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337290/render.png): Cantidad de barcos en la cola de espera del dique i.
+  
+  3. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337370/render.png): Cantidad de barcos en el sistema (que no han pasado a la cola de ningun dique) en el tiempo t.
+  
+* **Variable de conteo
+
+  1. ![equation](http://www.sciweavers.org/upload/Tex2Img_1585337791/render.png): Cantidad de barcos que han abandonado el sistema (que ya han transitado por todos los diques).
