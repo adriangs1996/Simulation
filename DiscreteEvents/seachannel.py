@@ -24,11 +24,13 @@ class Ship:
         assert hasattr(other, "arrival")
         return self.arrival < other.arrival
 
-    def arrive(self, time=0):
+    def arrive(self, time=0, debug=False):
         t = abs(normal(self.mean, sqrt(self.var)))
         self.arrival = t + time
-        logging.info("Arrive %s ship at %.2f minutes" %
-                     (self.type, self.arrival))
+        if debug:
+            logging.info("Arrive %s ship at %.2f minutes" %
+                         (self.type, self.arrival))
+            input("Enter to continue")
         return t + time
 
     def __str__(self):
@@ -274,7 +276,7 @@ class HatchSystem:
     def __len__(self):
         return self.__hatch_num
 
-    def do_fase(self, ships_queue, i):
+    def do_fase(self, ships_queue, i, debug=False):
         # si este es un dique de subida, realizar fase de subida
         t = 0
 
@@ -291,12 +293,19 @@ class HatchSystem:
 
         # Ciclo de subida
         if current.state == Hatch.UP:
+            if debug:
+                logging.info("=== ==== Starting Ascense of hatch %d === ====" %
+                             i)
+                input("Enter to continue")
             t += current.up_entry(ships_queue)
             t += current.up_transport()
             t1, ships = current.up_departure()
             t += t1
 
             # Una vez que el dique completo la subida, tiene que bajar
+            if debug:
+                logging.info("=== ==== Starting Descense of hatch %d" % i)
+                input("Enter to continue")
             t += current.down_entry([])
             t += current.down_transport()
             t1, _ = current.down_departure()
@@ -304,34 +313,49 @@ class HatchSystem:
 
         # Ciclo de bajada
         elif current.state == Hatch.DOWN:
+            if debug:
+                logging.info("=== ==== Starting Descense of hatch %d" % i)
+                input("Enter to continue")
             t += current.down_entry(ships_queue)
             t += current.down_transport()
             t1, ships = current.down_departure()
             t += t1
             # Una vez que el dique baja, tiene que volver a subir
+            if debug:
+                logging.info("=== ==== Starting Descense of hatch %d" % i)
+                input("Enter to continue")
             t += current.up_entry([])
             t += current.up_transport()
             t1, _ = current.up_departure()
             t += t1
 
+        if debug:
+            logging.info("=== ==== Finish Cycle at time %.2f === ====" % t)
+            input("Enter to continue")
+
         return t, ships
 
 
 class SeaChannel:
-    def __init__(self, hatches, func=None):
+    def __init__(self, hatches, func=None, debug=False):
         self.hatches = HatchSystem(hatches)
         # Generar llegadas de barcos durante el dia.
         # El canal funciona en 3 horarios, y en cada horario, hay diferencia
         # en los parametros de la distribucion con la que llegan barcos.
         self.ships_queue = []
 
+        self.func = func
+
+        self.debug = debug
+
+    def get_ships(self):
         # Si se se define una funcion para generar barcos de 8pm a 8am
         # entonces generamos los barcos correspondientes.
         # esta funcion debe devolver la cantidad de barcos que arriban
         # en este tiempo. (TODO Quizas una POISSON NO HOMOGENEA ??). Una
         # lista con los tiempos de arribo de estos barcos.
-        if func is not None:
-            new_ships = func()
+        if self.func is not None:
+            new_ships = self.func()
             for s in new_ships:
                 r = random()
                 if 0 <= r <= 1 / 3:
@@ -357,7 +381,7 @@ class SeaChannel:
                 ship = MediumShip(15, 3)
             elif 2 / 3 < ship_rand <= 1:
                 ship = LargeShip(45, 3)
-            nt = ship.arrive(time)
+            nt = ship.arrive(time, self.debug)
             time = nt
             self.ships_queue.append(ship)
 
@@ -368,12 +392,12 @@ class SeaChannel:
             ship = None
             ship_rand = random()
             if 0 <= ship_rand <= 1 / 3:
-                ship = SmallShip(5, 2)
+                ship = SmallShip(3, 1)
             elif 1 / 3 < ship_rand <= 2 / 3:
-                ship = MediumShip(15, 3)
+                ship = MediumShip(10, 5)
             elif 2 / 3 < ship_rand <= 1:
-                ship = LargeShip(45, 3)
-            nt = ship.arrive(time)
+                ship = LargeShip(35, 7)
+            nt = ship.arrive(time, self.debug)
             time = nt
             self.ships_queue.append(ship)
 
@@ -383,12 +407,12 @@ class SeaChannel:
             ship = None
             ship_rand = random()
             if 0 <= ship_rand <= 1 / 3:
-                ship = SmallShip(5, 2)
+                ship = SmallShip(10, 2)
             elif 1 / 3 < ship_rand <= 2 / 3:
-                ship = MediumShip(15, 3)
+                ship = MediumShip(20, 5)
             elif 2 / 3 < ship_rand <= 1:
-                ship = LargeShip(45, 3)
-            nt = ship.arrive(time)
+                ship = LargeShip(60, 9)
+            nt = ship.arrive(time, self.debug)
             time = nt
             self.ships_queue.append(ship)
 
@@ -396,6 +420,7 @@ class SeaChannel:
         self.ships_queue.sort()
 
     def run_day(self):
+        self.get_ships()
         # Recordar que 12h = 720 minutos
         queue = [x for x in self.ships_queue]
         ready_queue = []
@@ -408,6 +433,13 @@ class SeaChannel:
         pending = [[] for _ in range(len(self.hatches))]
         t = 0
         while t <= 720:
+
+            if self.debug and t >= 180:
+                print(
+                    "[+++] Passing from 8:00am - 11:00am to 11:00am - 5:00pm")
+                print("[++++] Average wait time: %.2f" % sum(wait_time) /
+                      len(wait_time))
+                input("Enter to continue")
             # Agregar a la cola los barcos que hallan arribado
             # y ponerlos pendientes para el dique 0
             if queue:
@@ -429,7 +461,7 @@ class SeaChannel:
                 hatch_times = []
                 while hlist:
                     i = hlist.pop(0)
-                    ti, ships = self.hatches.do_fase(pending[i], i)
+                    ti, ships = self.hatches.do_fase(pending[i], i, self.debug)
                     self.hatches[i].time_busy = max(t + ti,
                                                     self.hatches[i].time_busy)
                     hatch_times.append(ti)
