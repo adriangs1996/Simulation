@@ -1,6 +1,6 @@
 # Proyecto de Eventos Discretos.
 
-*Autor: Adrian Gonzalez Sanchez*
+*Autor: [Adrian Gonzalez Sanchez](https://github.com/adriangs1996)*
 
 *Grupo: C-412*
 
@@ -135,3 +135,56 @@ Entonces, para comenzar la simulación, inicializamos las variables:
 **Al finalizar:**
   Devolver ![equation](http://www.sciweavers.org/upload/Tex2Img_1585345342/render.png)
   
+  
+## Implementación
+
+La implementación del modelo sugerido en la sección anterior se basa en un conjunto de clases de support, que se ensamblan en la clase SeaChannel para formar el pipeline completo de la simulación.
+
+*Ship*: La clase Ship es la encargada de manejar el arribo de barcos al sistema, o sea, posee una función "arrive" que devuelve un valor ![equation](http://www.sciweavers.org/upload/Tex2Img_1585347212/render.png). Esta clase es un contenedor y no debe ser instanciada directamente, sino a partir de sus descendientes *LargeShip*, *MediumShip* y *SmallShip*, que no solo se ocupan de pasar los argumentos de la normal, sino que inicializan el valor de size, variable que es necesaria a la hora de decidir si un barco entra en un dique.
+
+*Hatch*: Esta clase se ocupa de representar un dique, en ella se simula todo el funcionamiento del dique (cerrar o abrir las compuertas, vaciar o llenar el dique, dejar entrar o sacar barcos del dique). Las distintas funciones de esta clase devuelven valores para el tiempo ![equation](http://www.sciweavers.org/upload/Tex2Img_1585347533/render.png) generados a partir de la simulación de los procesos que ocurren en el dique (tomando exponenciales con los argumentos ofrecidos en la descripción del problema), y tambien se ocupa de actualizar valores como ![equation](http://www.sciweavers.org/upload/Tex2Img_1585347667/render.png) para cada barco i que transita por el dique. Esta clase tampoco se debe instanciar directamente, de eso se ocupa la clase general SeaChannel.
+
+*HatchSystem*: Ofrece funciones de ayuda para manejar un conjunto de diques, ya sea poder acceder a ellos a traves de subindices, preguntar cuantos hay, y realizar una fase completa en alguno de los diques del sistema.
+
+*SeaChannel*: Es la clase principal que se ocupa de enlazar todas las estructuras del sistema. Posee una rutina *get_ships* que simula la llegada de los barcos al sistema. La implementación de esta función en SeaChannel genera un barco de un tipo aleatorio (grande, mediano, o chico) y luego decide el tiempo en que va a arribar dicho barco. Esta forma de generar los barcos probó no ser muy realista, y luego de un poco de investigación, se creó la clase *MultiShipsSeaChannel* que hereda directo de *SeaChannel* y reimplementa la función *get_ships* para generar entonces barcos chicos, medianos y grandes independientes, y ver, para cada tipo, los tiempos de arribo.
+
+SeaChannel posee una rutina *run_day*, que simula una jornada del canal, utilizando el modelo de la sección anterior.
+
+Para probar la implementación, se ofrece el módulo *driver.py*, que es el encargado de parametrizar la simulación y reportar los resultads. La forma de correr el simulador en su manera mas sencilla es:
+
+```bash
+$ ./driver.py
+```
+  
+Para ver una lista de los argumentos que recibe *driver.py* y una breve descripción de los mismos:
+
+```bash
+$ ./driver.py --help
+```
+
+Los mejores resultados se obtuvieron corriendo el algoritmo de la siguiente manera:
+
+```bash
+$ ./driver -i -c 1000 -m --hatches 5 -d U D U U U
+```
+Al correr con -c, *driver* reporta el resultado de cada simulación y de pasarse el argumento -m se calcula el promedio del valor obtenido en cada simulación. 
+
+El argumento de mayor importancia es -i, el cual cambia entre las funciones que generan los arribos de los barcos, por tanto se recomienda siempre pasar este argumento.
+
+## Consideraciones
+
+Al simular varias veces la situación planteada, se pudo obtener una idea de los problemas a los que nos podemos enfrentar al construir un canal marı́timo. Por ejemplo, con 5 diques, asumiendo que el tiempo de bajada y subida de los diques se comporta con la misma distribución y generando los barcos de distintas dimensiones de manera independiente, se obtiene un tiempo de espera promedio que oscila entre los 28 minutos, este tiempo incluye el tiempo que un barco espera porque se abran las compuertas para pasar, o que un barco espera por otro para poder entrar al dique (recordar que estamos asumiendo que los barcos entran a los diques de uno en uno y salen de la misma forma). 28 minutos puede no parecer mucho, pero este tiempo crece proporcionalmente a la cantidad de diques, reportando valores de 38 minutos para 6 diques, 48 para 7 y 54 para 8, por ejemplo. Esto es bastante intuitivo, producto del allotment de los diques el cual puede significar un cuello de botella en horarios muy concurridos. Las formas para reducir este tiempo de espera puede ser:
+
+  * Garantizar menos arribos de barcos al sistema (al correr sin el argumento -i, el simulador reporta tiempos de espera alrededor de los 12 minutos).
+  
+  * Reducir la cantidad de diques del sistema (Por ejemplo con 1 dique, los tiempos de espera rondan los 5 minutos, aproximadamente el tiempo que le toma a cada barco entrar al dique y este realizar una fase entera). En la realidad, esta opción puede no ser viable, ya que generalmente la cantidad de diques responden a la necesidad de llevar barcos a zonas elevadas o cruzar largos tramos de aguas turbulentas.
+  
+  * Agilizar la apertura de compuertas. Variar los argumentos de las exponenciales que rigen el comportamiento de las compuertas retornó resultados favorables, auqnue los cambios no fueron tan perceptibles como la cantidad de diques o la cantidad de arribo de barcos (en los mejores casos, se obtiene de 4 a 5 minutos de mejora, pero implica considerar valores muy chicos para los lambdas de las exponenciales, algo que en la realidad puede no ser factible).
+  
+Si nos abstraemos un poco y pensamos en los barcos como procesos y en el canal como un scheduler, se puede transformar este problema en un problema de minimizar el turn-around time de procesos y sabemos, por ejemplo de algoritmos como STCF que dado las restricciones de nuestro problema, ofrecen buenos resultados, de hecho durante la simulación, se intento ordenar la cola de espera de cada dique por dimensión de los barcos, tratando de atender en cada momento a la mayor cantidad de barcos posibles (estas colas por supuesto solo contienen barcos que hayan arribado al sistema en el tiempo t); lo que arrojó algunas mejoras en el tiempo de espera en cola de cada barco. Esta implementación no se incluye en el proyecto, pues a lo mejor se sale del objetivo y es muy sencillo de incorporar al modelo, pero a la hora de reportar aspectos que influyen en el funcionamiento del canal, podemos decir:
+
+ 1. Cantidad de arribos de barcos en los distintos horarios (en particular las colisiones de tiempo en los arribos, o sea muchos barcos que llegan en intervalos muy chicos de tiempo).
+ 
+ 2. Cantidad de diques en el canal.
+ 
+ 3. Orden en que se toman los barcos a la hora dejarlos entrar a un dique.
