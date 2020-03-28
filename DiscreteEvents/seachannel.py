@@ -3,6 +3,7 @@ from numpy.random import random
 from math import sqrt
 from rtools import normal, exponential
 import logging
+from random import randint
 
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 
@@ -59,6 +60,30 @@ class LargeShip(Ship):
         super().__init__(mean, var)
         self.size = LARGESIZE
         self.type = "Large"
+
+
+def before():
+    from numpy.random import poisson
+    c = poisson()
+    r = []
+    for _ in range(c):
+        if random() <= 2 / 3:
+            s = LargeShip(randint(30, 45), randint(10, 25))
+            s.arrive()
+            s.arrival *= -1
+            r.append(s)
+        else:
+            if random() <= 1 / 2:
+                s = SmallShip(randint(10, 15), randint(5, 10))
+                s.arrive()
+                s.arrival *= -1
+                r.append(s)
+            else:
+                s = MediumShip(randint(20, 30), randint(10, 15))
+                s.arrive()
+                s.arrival *= -1
+                r.append(s)
+    return r
 
 
 class Hatch:
@@ -337,7 +362,7 @@ class HatchSystem:
 
 
 class SeaChannel:
-    def __init__(self, hatches, func=None, debug=False):
+    def __init__(self, hatches, func=lambda: before(), debug=False):
         self.hatches = HatchSystem(hatches)
         # Generar llegadas de barcos durante el dia.
         # El canal funciona en 3 horarios, y en cada horario, hay diferencia
@@ -357,15 +382,7 @@ class SeaChannel:
         if self.func is not None:
             new_ships = self.func()
             for s in new_ships:
-                r = random()
-                if 0 <= r <= 1 / 3:
-                    ship = SmallShip(5 / 2)
-                elif 1 / 3 < r <= 2 / 3:
-                    ship = MediumShip(15, 3)
-                else:
-                    ship = LargeShip(45, 3)
-                ship.arrival = -s
-                self.ships_queue.append(ship)
+                self.ships_queue.append(s)
 
         # Simular la llegada entre las 8am y las 11am
         # (el tiempo entre arribos se da en minutos).
